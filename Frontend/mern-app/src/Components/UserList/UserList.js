@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
 import UserRow from "../UserRow/UserRow";
-
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUsers } from "../../actions/index";
+import EditUserModal from "../EditUserModal/EditUserModal";
 const UserList = () => {
-  const [listOfUSer, setListOfUser] = useState([]);
-  const [errors, setErrors] = useState(null);
+  const [editToggle, setEditToggle] = useState(false);
+  const [toEditUserID, setToEditUserID] = useState("");
+  const userList = useSelector((state) => state.userReducer.users);
+  const dispatch = useDispatch();
 
+  const getToEditUserID = (id) => {
+    setToEditUserID(id);
+  };
   useEffect(() => {
-    axios
-      .get("http://localhost:7200/user")
-      .then((response) => setListOfUser(response.data))
-      .catch((err) => setErrors(err));
-  }, []);
+    dispatch(fetchUsers());
+  }, [dispatch]);
   return (
     <div className="container">
       <section className="section">
@@ -27,13 +30,24 @@ const UserList = () => {
               </tr>
             </thead>
             <tbody>
-              {listOfUSer.map((user, i) => (
-                <UserRow key={user.id} user={user} />
+              {userList.map((user, i) => (
+                <UserRow
+                  key={user._id}
+                  user={user}
+                  setEditToggle={setEditToggle}
+                  getToEditUserID={getToEditUserID}
+                />
               ))}
             </tbody>
           </table>
         </div>
       </section>
+      {editToggle && (
+        <EditUserModal
+          setEditToggle={setEditToggle}
+          toEditUserID={toEditUserID}
+        />
+      )}
     </div>
   );
 };
